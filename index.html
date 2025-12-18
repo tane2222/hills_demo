@@ -50,7 +50,6 @@
           <h2>Self Check</h2>
           <p>気になる項目をチェックしましょう</p>
         </div>
-
         <div class="grid-menu">
           <div class="grid-card" onclick="app.startDiagnosis('periodontal')">
             <div class="grid-icon">🦷</div>
@@ -125,28 +124,47 @@
     <section id="view-result" class="view hidden">
       <div class="result-header">
         <h3>診断レポート</h3>
-        <p class="date" id="result-date">--</p>
+        <p class="date" id="result-date">2025.12.18</p>
       </div>
+
       <div class="score-card">
         <div class="score-row">
           <div class="score-item">
             <span class="label">あなたのスコア</span>
-            <div class="value-box"><span class="value" id="result-score">--</span><span class="unit">点</span></div>
+            <div class="value-box">
+              <span class="value" id="result-score">--</span>
+              <span class="unit">点</span>
+            </div>
           </div>
           <div class="score-item">
             <span class="label">リスクレベル</span>
-            <div class="level-badge" id="result-level">-</div>
+            <div class="level-badge" id="result-level">LEVEL -</div>
           </div>
         </div>
+        
         <hr class="divider">
-        <p class="result-summary" id="result-summary">--</p>
+        
+        <p class="result-summary" id="result-summary">
+          判定結果の概要がここに表示されます。
+        </p>
       </div>
+
       <div class="chart-card">
-        <h4>平均との比較</h4>
-        <div class="chart-container"><canvas id="scoreChart"></canvas></div>
+        <h4>年代別平均との比較</h4>
+        <div class="chart-container">
+          <canvas id="scoreChart"></canvas>
+        </div>
+        <p class="chart-caption">※同年代の患者様データに基づく比較</p>
       </div>
+
+      <div class="advice-card">
+        <h4><span class="icon">💡</span> 今後のアドバイス</h4>
+        <p id="result-advice">アドバイス文章...</p>
+      </div>
+
       <div class="cta-area">
-        <button class="btn-primary" onclick="app.finishAndReturn()">保存して終了</button>
+        <button class="btn-primary" onclick="app.finishAndReturn()">レポートを保存して終了</button>
+        <a href="#" class="btn-link">WEB予約はこちら &gt;</a>
       </div>
     </section>
 
