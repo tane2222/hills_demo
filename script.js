@@ -32,8 +32,8 @@ const DATA = {
 
 // --- Config ---
 // ★ここにGASとLIFFのIDを設定
-const GAS_URL = 'YOUR_GAS_WEB_APP_URL';
-const LIFF_ID = 'YOUR_LIFF_ID'; 
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbw1wYTnO7uSsxeGiLnLcT0k1cZvZmXAGICCMICoYgIK-A3NfbCQSJcO2F_zmD9IeEChvA/exec';
+const LIFF_ID = '2008709251-eFKUYcgF'; 
 
 const app = {
   state: {
