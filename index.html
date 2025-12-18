@@ -12,17 +12,40 @@
 <body>
 
   <header class="app-header">
-    <div class="logo">DENTAL CHECK</div>
+    <div class="logo">DENTAL LOG</div>
     <div class="sub-logo">Official Report</div>
   </header>
 
   <main class="container">
-    
-    <section id="view-menu" class="view fade-in">
+
+    <section id="view-mypage" class="view fade-in">
+      
+      <div class="profile-card">
+        <div class="profile-header">
+          <img id="user-icon" src="https://placehold.co/100" alt="User" class="avatar">
+          <div class="profile-info">
+            <p class="greeting">Hello,</p>
+            <h2 id="user-name">Guest User</h2>
+          </div>
+        </div>
+        
+        <div class="chart-area-radar">
+          <canvas id="radarChart"></canvas>
+        </div>
+        <p class="chart-subtext">現在の口腔内バランス</p>
+      </div>
+
+      <h3 class="section-title">診断履歴</h3>
+      <div id="history-list" class="history-list">
+        <div class="empty-state">履歴を読み込み中...</div>
+      </div>
+    </section>
+
+
+    <section id="view-menu" class="view hidden">
       <div class="hero-card">
         <h2>Self Check</h2>
-        <p>あなたの「お口の健康偏差値」を<br>今すぐ診断します。</p>
-        <img src="https://placehold.co/600x400/0056D2/FFFFFF?text=DENTAL+SCAN" alt="Concept" class="hero-img">
+        <p>気になる項目を選択してください</p>
       </div>
 
       <div class="menu-list">
@@ -30,7 +53,7 @@
           <div class="icon-box">🦷</div>
           <div class="text-box">
             <h3>歯周病リスク診断</h3>
-            <p>口臭・出血・歯茎の状態チェック</p>
+            <p>出血・口臭・ネバつきチェック</p>
           </div>
           <div class="arrow">→</div>
         </button>
@@ -38,13 +61,14 @@
         <button class="menu-card" onclick="app.startDiagnosis('aesthetic')">
           <div class="icon-box">✨</div>
           <div class="text-box">
-            <h3>審美・ホワイトニング</h3>
-            <p>歯の色・並び・見た目チェック</p>
+            <h3>審美・見た目診断</h3>
+            <p>歯の色・並び・印象チェック</p>
           </div>
           <div class="arrow">→</div>
         </button>
       </div>
     </section>
+
 
     <section id="view-question" class="view hidden">
       <div class="progress-bar-container">
@@ -53,70 +77,67 @@
       
       <div class="question-card">
         <div class="step-label">QUESTION <span id="q-current">1</span></div>
-        <h2 id="q-text" class="question-text">質問がここに入ります</h2>
-        <div id="q-options" class="options-grid">
-          </div>
+        <h2 id="q-text" class="question-text">質問テキスト</h2>
+        <div id="q-options" class="options-grid"></div>
       </div>
     </section>
 
-    <section id="view-loading" class="view hidden">
-      <div class="loading-content">
-        <div class="spinner"></div>
-        <p>データを解析中...</p>
-        <p class="sub-text">AIエンジンが判定しています</p>
-      </div>
-    </section>
 
     <section id="view-result" class="view hidden">
-      
       <div class="result-header">
         <h3>診断レポート</h3>
-        <p class="date" id="result-date">2025.12.18</p>
+        <p class="date" id="result-date">2025.xx.xx</p>
       </div>
 
       <div class="score-card">
         <div class="score-row">
           <div class="score-item">
-            <span class="label">あなたのスコア</span>
+            <span class="label">あなたのリスクスコア</span>
             <div class="value-box">
               <span class="value" id="result-score">--</span>
               <span class="unit">点</span>
             </div>
           </div>
           <div class="score-item">
-            <span class="label">リスクレベル</span>
-            <div class="level-badge" id="result-level">LEVEL -</div>
+            <span class="label">判定</span>
+            <div class="level-badge" id="result-level">-</div>
           </div>
         </div>
-        
         <hr class="divider">
-        
-        <p class="result-summary" id="result-summary">
-          判定結果の概要がここに表示されます。
-        </p>
+        <p class="result-summary" id="result-msg">判定コメント</p>
       </div>
 
       <div class="chart-card">
-        <h4>年代別平均との比較</h4>
-        <div class="chart-container">
+        <h4><span class="icon">📊</span> 年代別平均との比較</h4>
+        <div class="chart-container-bar">
           <canvas id="scoreChart"></canvas>
         </div>
-        <p class="chart-caption">※同年代の患者様データに基づく比較</p>
-      </div>
-
-      <div class="advice-card">
-        <h4><span class="icon">💡</span> 今後のアドバイス</h4>
-        <p id="result-advice">アドバイス文章...</p>
+        <p class="chart-caption">※同年代のデータに基づく比較</p>
       </div>
 
       <div class="cta-area">
-        <button class="btn-primary" onclick="app.closeLiff()">レポートを保存して終了</button>
-        <a href="#" class="btn-link">WEB予約はこちら &gt;</a>
+        <button class="btn-primary" onclick="app.finishAndReturn()">保存してマイページへ</button>
+        <a href="#" class="btn-link">オンライン予約へ進む &gt;</a>
       </div>
-
     </section>
 
+    <div id="global-loading" class="loading-overlay hidden">
+      <div class="spinner"></div>
+      <p style="margin-top:15px; font-weight:bold; color:#555;">Processing...</p>
+    </div>
+
   </main>
+
+  <nav class="bottom-nav">
+    <button class="nav-item active" onclick="app.switchTab('mypage')" id="nav-mypage">
+      <span class="nav-icon">👤</span>
+      <span class="nav-label">マイページ</span>
+    </button>
+    <button class="nav-item" onclick="app.switchTab('menu')" id="nav-menu">
+      <span class="nav-icon">🩺</span>
+      <span class="nav-label">診断する</span>
+    </button>
+  </nav>
 
   <script src="script.js"></script>
 </body>
