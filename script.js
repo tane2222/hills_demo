@@ -94,14 +94,28 @@ const app = {
   },
 
   // --- B. Data Fetching (My Page) ---
+  // script.js の fetchUserData をこれに置き換え
+
   fetchUserData: async () => {
     try {
+      // ★デバッグ用: URLが正しいかコンソールに出す
+      console.log("Fetching from:", GAS_URL);
+
       const res = await fetch(GAS_URL, {
         method: 'POST',
+        // ★以下の2行を追加（重要）
+        mode: 'cors', 
+        credentials: 'omit', 
         headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify({ action: 'get_user_data', userId: app.state.user.userId })
       });
+      
+      if (!res.ok) {
+        throw new Error(`HTTP Status: ${res.status}`);
+      }
+
       const data = await res.json();
+      console.log("Data received:", data); // ★データ確認用
 
       if (data.status === 'success') {
         app.state.history = data.history;
@@ -109,12 +123,19 @@ const app = {
         
         app.renderHistory();
         app.drawRadarChart(data.radar);
+      } else {
+         // GAS側でエラーキャッチされた場合
+         console.error("Server Logic Error:", data);
       }
+
     } catch (e) {
-      console.error('Fetch Error:', e);
-      // 通信エラー時は空のデータを表示
+      console.error('Fetch Error Detail:', e);
+      // エラー時も画面を止めないためのダミー表示
       app.renderHistory();
       app.drawRadarChart([0,0,0,0,0]);
+      
+      // ユーザーにアラートを出す（任意）
+      // alert("通信エラー: シート名が正しいか、URLが/execか確認してください");
     }
   },
 
