@@ -12,23 +12,21 @@
 <body>
 
   <header class="app-header">
-    <div class="logo">DENTAL LOG</div>
+    <div class="logo">DENTAL CHECK</div>
     <div class="sub-logo">Official Report</div>
   </header>
 
   <main class="container">
-
+    
     <section id="view-mypage" class="view fade-in">
-      
       <div class="profile-card">
         <div class="profile-header">
           <img id="user-icon" src="https://placehold.co/100" alt="User" class="avatar">
           <div class="profile-info">
-            <p class="greeting">Hello,</p>
+            <p class="greeting">Welcome back,</p>
             <h2 id="user-name">Guest User</h2>
           </div>
         </div>
-        
         <div class="chart-area-radar">
           <canvas id="radarChart"></canvas>
         </div>
@@ -37,23 +35,22 @@
 
       <h3 class="section-title">診断履歴</h3>
       <div id="history-list" class="history-list">
-        <div class="empty-state">履歴を読み込み中...</div>
+        <div class="empty-state">履歴読み込み中...</div>
       </div>
     </section>
-
 
     <section id="view-menu" class="view hidden">
       <div class="hero-card">
         <h2>Self Check</h2>
-        <p>気になる項目を選択してください</p>
-      </div>
+        <p>あなたの「お口の健康偏差値」を<br>今すぐ診断します。</p>
+        </div>
 
       <div class="menu-list">
         <button class="menu-card" onclick="app.startDiagnosis('periodontal')">
           <div class="icon-box">🦷</div>
           <div class="text-box">
             <h3>歯周病リスク診断</h3>
-            <p>出血・口臭・ネバつきチェック</p>
+            <p>口臭・出血・歯茎の状態チェック</p>
           </div>
           <div class="arrow">→</div>
         </button>
@@ -61,14 +58,13 @@
         <button class="menu-card" onclick="app.startDiagnosis('aesthetic')">
           <div class="icon-box">✨</div>
           <div class="text-box">
-            <h3>審美・見た目診断</h3>
-            <p>歯の色・並び・印象チェック</p>
+            <h3>審美・ホワイトニング</h3>
+            <p>歯の色・並び・見た目チェック</p>
           </div>
           <div class="arrow">→</div>
         </button>
       </div>
     </section>
-
 
     <section id="view-question" class="view hidden">
       <div class="progress-bar-container">
@@ -77,53 +73,57 @@
       
       <div class="question-card">
         <div class="step-label">QUESTION <span id="q-current">1</span></div>
-        <h2 id="q-text" class="question-text">質問テキスト</h2>
+        <h2 id="q-text" class="question-text">--</h2>
         <div id="q-options" class="options-grid"></div>
       </div>
     </section>
 
-
     <section id="view-result" class="view hidden">
       <div class="result-header">
         <h3>診断レポート</h3>
-        <p class="date" id="result-date">2025.xx.xx</p>
+        <p class="date" id="result-date">--</p>
       </div>
 
       <div class="score-card">
         <div class="score-row">
           <div class="score-item">
-            <span class="label">あなたのリスクスコア</span>
+            <span class="label">あなたのスコア</span>
             <div class="value-box">
               <span class="value" id="result-score">--</span>
               <span class="unit">点</span>
             </div>
           </div>
           <div class="score-item">
-            <span class="label">判定</span>
+            <span class="label">リスクレベル</span>
             <div class="level-badge" id="result-level">-</div>
           </div>
         </div>
         <hr class="divider">
-        <p class="result-summary" id="result-msg">判定コメント</p>
+        <p class="result-summary" id="result-summary">--</p>
       </div>
 
       <div class="chart-card">
-        <h4><span class="icon">📊</span> 年代別平均との比較</h4>
-        <div class="chart-container-bar">
+        <h4>年代別平均との比較</h4>
+        <div class="chart-container">
           <canvas id="scoreChart"></canvas>
         </div>
-        <p class="chart-caption">※同年代のデータに基づく比較</p>
+        <p class="chart-caption">※同年代の患者様データに基づく比較</p>
+      </div>
+
+      <div class="advice-card">
+        <h4><span class="icon">💡</span> 今後のアドバイス</h4>
+        <p id="result-advice">アドバイス...</p>
       </div>
 
       <div class="cta-area">
-        <button class="btn-primary" onclick="app.finishAndReturn()">保存してマイページへ</button>
-        <a href="#" class="btn-link">オンライン予約へ進む &gt;</a>
+        <button class="btn-primary" onclick="app.finishAndReturn()">レポートを保存してマイページへ</button>
+        <a href="#" class="btn-link">WEB予約はこちら &gt;</a>
       </div>
     </section>
 
     <div id="global-loading" class="loading-overlay hidden">
       <div class="spinner"></div>
-      <p style="margin-top:15px; font-weight:bold; color:#555;">Processing...</p>
+      <p style="margin-top:10px; color:#666;">Processing...</p>
     </div>
 
   </main>
