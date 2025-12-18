@@ -32,7 +32,7 @@ const DATA = {
 
 // --- Config ---
 // 【重要】ここに正しいIDを入れてください
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbw1wYTnO7uSsxeGiLnLcT0k1cZvZmXAGICCMICoYgIK-A3NfbCQSJcO2F_zmD9IeEChvA/exec'; 
+const GAS_URL = 'https://script.google.com/macros/s/AKfycby-TmXAoKsyyie_srkFnvX3xghsPO4QQuIlSnEn-0c31uEX8Up6M5dwhEGwhd7dzgoMZg/exec'; 
 const LIFF_ID = '2008709251-eFKUYcgF'; 
 
 const app = {
