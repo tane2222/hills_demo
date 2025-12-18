@@ -1,6 +1,6 @@
 // --- Configuration: 診断コンテンツ ---
 const DATA = {
-  // 1. 歯周病 (既存)
+  // 1. 歯周病
   periodontal: {
     title: '歯周病リスク',
     questions: [
@@ -16,7 +16,7 @@ const DATA = {
       { max: 100, level: '危険', color: '#FF5252', msg: '進行している可能性があります。早急に受診してください。' }
     ]
   },
-  // 2. 審美 (既存)
+  // 2. 審美
   aesthetic: {
     title: '審美チェック',
     questions: [
@@ -30,7 +30,7 @@ const DATA = {
       { max: 60, level: '要改善', color: '#FF5252', msg: '印象が大きく変わる可能性があります。ご相談ください。' }
     ]
   },
-  // 3. ステインチェック (GAS由来)
+  // 3. ステイン
   stain: {
     title: 'ステインリスク',
     questions: [
@@ -46,7 +46,7 @@ const DATA = {
       { max: 5, level: '高リスク', color: '#FF5252', msg: '着色しやすい習慣です。定期的なクリーニングをお勧めします。' }
     ]
   },
-  // 4. 口臭チェック (新規)
+  // 4. 口臭
   breath: {
     title: '口臭チェック',
     questions: [
@@ -60,7 +60,7 @@ const DATA = {
       { max: 60, level: '要ケア', color: '#FF5252', msg: 'ケアが必要です。歯科医院でのチェックをお勧めします。' }
     ]
   },
-  // 5. ブラッシング (新規)
+  // 5. ブラッシング
   brushing: {
     title: '磨き方診断',
     questions: [
@@ -76,28 +76,13 @@ const DATA = {
   }
 };
 
-// --- Knowledge Data (GASコンテンツを移植) ---
+// --- Knowledge Data ---
 const KNOWLEDGE_DATA = {
-  perio_truth: {
-    title: '歯周病の正体とは？',
-    content: "実は歯周病は、口の中だけの問題ではありません。\n\n心筋梗塞や糖尿病など、全身の病気と深く関わっています。\n\n「サイレントキラー」と呼ばれる理由は、初期段階ではほとんど自覚症状がないためです。気づいた時には手遅れになり、歯を失う原因No.1となっています。"
-  },
-  pro_care: {
-    title: 'プロのケア vs 自宅のケア',
-    content: "「毎日磨いてるから大丈夫」と思っていませんか？\n\n実は歯ブラシで落とせる汚れは全体の約60%と言われています。\n\n残りの汚れ（バイオフィルム）は、歯科医院の専用機器でないと除去できません。3ヶ月に1度のプロケアが推奨されるのはこのためです。"
-  },
-  child: {
-    title: 'お子様の歯 Q&A',
-    content: "Q. フッ素はいつから？\nA. 歯が生え始めたらすぐに始められます。\n\nQ. シーラントって必要？\nA. 奥歯の溝は虫歯になりやすいため、埋めることで予防効果が高まります。\n\nQ. 仕上げ磨きは何歳まで？\nA. 小学校中学年くらいまでは推奨しています。"
-  },
-  implant: {
-    title: 'インプラントの秘訣',
-    content: "インプラントは「第二の永久歯」ですが、天然歯以上にケアが重要です。\n\nケアを怠ると「インプラント周囲炎」になり、抜け落ちてしまうこともあります。\n\n長持ちさせる秘訣は、毎日の丁寧なブラッシングと、定期的な噛み合わせのチェックです。"
-  },
-  goods: {
-    title: 'おすすめケアグッズ',
-    content: "【歯ブラシ】\nヘッドが小さめで、毛先が柔らかいものが歯周ポケットに届きやすくおすすめです。\n\n【デンタルフロス】\n歯ブラシだけでは届かない歯間の汚れを除去します。初心者にはホルダータイプ（Y字型）が使いやすいでしょう。"
-  }
+  perio_truth: { title: '歯周病の正体とは？', content: "実は歯周病は、口の中だけの問題ではありません。\n\n心筋梗塞や糖尿病など、全身の病気と深く関わっています。\n\n「サイレントキラー」と呼ばれる理由は、初期段階ではほとんど自覚症状がないためです。気づいた時には手遅れになり、歯を失う原因No.1となっています。" },
+  pro_care: { title: 'プロのケア vs 自宅のケア', content: "「毎日磨いてるから大丈夫」と思っていませんか？\n\n実は歯ブラシで落とせる汚れは全体の約60%と言われています。\n\n残りの汚れ（バイオフィルム）は、歯科医院の専用機器でないと除去できません。3ヶ月に1度のプロケアが推奨されるのはこのためです。" },
+  child: { title: 'お子様の歯 Q&A', content: "Q. フッ素はいつから？\nA. 歯が生え始めたらすぐに始められます。\n\nQ. シーラントって必要？\nA. 奥歯の溝は虫歯になりやすいため、埋めることで予防効果が高まります。\n\nQ. 仕上げ磨きは何歳まで？\nA. 小学校中学年くらいまでは推奨しています。" },
+  implant: { title: 'インプラントの秘訣', content: "インプラントは「第二の永久歯」ですが、天然歯以上にケアが重要です。\n\nケアを怠ると「インプラント周囲炎」になり、抜け落ちてしまうこともあります。\n\n長持ちさせる秘訣は、毎日の丁寧なブラッシングと、定期的な噛み合わせのチェックです。" },
+  goods: { title: 'おすすめケアグッズ', content: "【歯ブラシ】\nヘッドが小さめで、毛先が柔らかいものが歯周ポケットに届きやすくおすすめです。\n\n【デンタルフロス】\n歯ブラシだけでは届かない歯間の汚れを除去します。初心者にはホルダータイプ（Y字型）が使いやすいでしょう。" }
 };
 
 // --- Config ---
@@ -112,7 +97,9 @@ const app = {
   },
 
   init: async () => {
+    // ローディングタイマー
     const timer = setTimeout(() => { document.getElementById('global-loading').classList.add('hidden'); }, 5000);
+
     try {
       await liff.init({ liffId: LIFF_ID });
       if (!liff.isLoggedIn()) { liff.login(); return; }
@@ -122,7 +109,23 @@ const app = {
       document.getElementById('user-name').innerText = profile.displayName;
       if(profile.pictureUrl) document.getElementById('user-icon').src = profile.pictureUrl;
 
+      // 1. マイページデータ取得
       await app.fetchUserData();
+
+      // 2. ディープリンク処理（通知から来た場合）
+      // URLパラメータ ?page=know&id=child などを解析
+      const params = new URLSearchParams(window.location.search);
+      const page = params.get('page');
+      const id = params.get('id');
+
+      if (page && id) {
+        // 少し待ってから遷移（データロード待ち）
+        setTimeout(() => {
+          if (page === 'check') app.startDiagnosis(id);
+          if (page === 'know') app.showKnowledge(id);
+        }, 500);
+      }
+
     } catch (err) {
       console.error(err);
       app.state.user = { userId: 'dummy', displayName: 'Demo' };
@@ -158,10 +161,18 @@ const app = {
       list.innerHTML = '<div class="empty-state" style="text-align:center;color:#999;padding:20px;">履歴なし</div>'; return;
     }
     app.state.history.forEach(h => {
-      let title = DATA[h.type] ? DATA[h.type].title : h.type;
+      // 知識ログと診断ログでタイトル取得元を分ける
+      let title = h.type;
+      if (DATA[h.type]) title = DATA[h.type].title;
+      else if (KNOWLEDGE_DATA[h.type]) title = KNOWLEDGE_DATA[h.type].title;
+
       const d = document.createElement('div');
       d.className = 'history-item';
-      d.innerHTML = `<div><span class="h-date">${h.date}</span><span class="h-title">${title}</span></div><div class="h-score">${h.score}pt</div>`;
+      
+      // スコア表示（知識系はスコアがないので非表示または読了）
+      const scoreText = (h.score > 0) ? `${h.score}pt` : '<span style="font-size:0.8rem;color:#888;">読了</span>';
+      
+      d.innerHTML = `<div><span class="h-date">${h.date}</span><span class="h-title">${title}</span></div><div class="h-score">${scoreText}</div>`;
       list.appendChild(d);
     });
   },
@@ -173,7 +184,8 @@ const app = {
     app.state.qIndex = 0;
     app.state.answers = {};
     app.renderQuestion();
-    app.switchView('view-question');
+    app.switchTab('menu'); // メニューを表示状態にしてから
+    app.switchView('view-question'); // 質問画面へ
     document.querySelector('.bottom-nav').style.display = 'none';
   },
 
@@ -242,15 +254,30 @@ const app = {
   showKnowledge: (key) => {
     const data = KNOWLEDGE_DATA[key];
     if(!data) return;
+    
+    // UI表示
     document.getElementById('k-title').innerText = data.title;
     document.getElementById('k-content').innerText = data.content;
+    app.switchTab('menu');
     app.switchView('view-knowledge');
     document.querySelector('.bottom-nav').style.display = 'none';
+
+    // ★ログ送信（既読管理のため）
+    if(app.state.user && app.state.user.userId !== 'dummy') {
+      fetch(GAS_URL, {
+        method: 'POST', headers: {'Content-Type': 'text/plain'},
+        body: JSON.stringify({
+          action: 'log_knowledge',
+          userId: app.state.user.userId,
+          displayName: app.state.user.displayName,
+          type: key
+        })
+      }).catch(e => console.log('Log Error', e)); // エラーでもユーザーには見せない
+    }
   },
 
   closeKnowledge: () => {
     app.switchTab('menu');
-    // サブタブを知識側に戻しておく
     app.switchSubTab('know');
   },
 
@@ -271,10 +298,8 @@ const app = {
   },
 
   switchSubTab: (subName) => {
-    // 診断リストと知識リストの切り替え
     document.querySelectorAll('.sub-nav-item').forEach(el => el.classList.remove('active'));
     document.getElementById(`sub-${subName}`).classList.add('active');
-    
     if (subName === 'check') {
       document.getElementById('content-check').classList.remove('hidden');
       document.getElementById('content-know').classList.add('hidden');
