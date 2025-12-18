@@ -97,7 +97,6 @@ const app = {
   },
 
   init: async () => {
-    // ローディングタイマー
     const timer = setTimeout(() => { document.getElementById('global-loading').classList.add('hidden'); }, 5000);
 
     try {
@@ -112,14 +111,12 @@ const app = {
       // 1. マイページデータ取得
       await app.fetchUserData();
 
-      // 2. ディープリンク処理（通知から来た場合）
-      // URLパラメータ ?page=know&id=child などを解析
+      // 2. ディープリンク処理
       const params = new URLSearchParams(window.location.search);
       const page = params.get('page');
       const id = params.get('id');
 
       if (page && id) {
-        // 少し待ってから遷移（データロード待ち）
         setTimeout(() => {
           if (page === 'check') app.startDiagnosis(id);
           if (page === 'know') app.showKnowledge(id);
@@ -129,7 +126,9 @@ const app = {
     } catch (err) {
       console.error(err);
       app.state.user = { userId: 'dummy', displayName: 'Demo' };
-      app.drawRadarChart([50, 50, 50, 50, 50]);
+      // エラー時も仮データを表示するために再描画
+      app.renderHistory();
+      app.drawRadarChart([60, 40, 70, 50, 80]);
     } finally {
       clearTimeout(timer);
       const loader = document.getElementById('global-loading');
@@ -148,19 +147,35 @@ const app = {
       const data = await res.json();
       if (data.status === 'success') {
         app.state.history = data.history;
+        // データ取得成功時に描画
         app.drawRadarChart(data.radar);
         app.renderHistory();
       }
-    } catch(e) { app.drawRadarChart([0,0,0,0,0]); app.renderHistory(); }
+    } catch(e) { 
+      // エラー時は仮データで描画
+      app.renderHistory(); 
+      app.drawRadarChart([50,50,50,50,50]); 
+    }
   },
   
+  // ★履歴描画（仮データ対応版）
   renderHistory: () => {
     const list = document.getElementById('history-list');
     list.innerHTML = '';
-    if (!app.state.history || app.state.history.length === 0) {
-      list.innerHTML = '<div class="empty-state" style="text-align:center;color:#999;padding:20px;">履歴なし</div>'; return;
+    
+    // データがない場合、仮のデータ（3件）を表示する
+    let displayHistory = app.state.history;
+    
+    if (!displayHistory || displayHistory.length === 0) {
+      // 仮の履歴データ（3件）
+      displayHistory = [
+        { date: '2023/12/01', type: 'periodontal', score: 65, level: '注意' },
+        { date: '2023/11/15', type: 'aesthetic', score: 40, level: '関心あり' },
+        { date: '2023/10/20', type: 'breath', score: 80, level: '要ケア' }
+      ];
     }
-    app.state.history.forEach(h => {
+
+    displayHistory.forEach(h => {
       // 知識ログと診断ログでタイトル取得元を分ける
       let title = h.type;
       if (DATA[h.type]) title = DATA[h.type].title;
@@ -170,9 +185,15 @@ const app = {
       d.className = 'history-item';
       
       // スコア表示（知識系はスコアがないので非表示または読了）
-      const scoreText = (h.score > 0) ? `${h.score}pt` : '<span style="font-size:0.8rem;color:#888;">読了</span>';
+      const scoreText = (h.score > 0) ? `<span style="color:var(--primary);font-weight:bold;">${h.score}pt</span>` : '<span style="font-size:0.8rem;color:#888;">読了</span>';
       
-      d.innerHTML = `<div><span class="h-date">${h.date}</span><span class="h-title">${title}</span></div><div class="h-score">${scoreText}</div>`;
+      d.innerHTML = `
+        <div style="display:flex; flex-direction:column;">
+          <span class="h-date">${h.date}</span>
+          <span class="h-title">${title}</span>
+        </div>
+        <div class="h-score">${scoreText}</div>
+      `;
       list.appendChild(d);
     });
   },
@@ -184,8 +205,8 @@ const app = {
     app.state.qIndex = 0;
     app.state.answers = {};
     app.renderQuestion();
-    app.switchTab('menu'); // メニューを表示状態にしてから
-    app.switchView('view-question'); // 質問画面へ
+    app.switchTab('menu'); 
+    app.switchView('view-question'); 
     document.querySelector('.bottom-nav').style.display = 'none';
   },
 
@@ -255,14 +276,12 @@ const app = {
     const data = KNOWLEDGE_DATA[key];
     if(!data) return;
     
-    // UI表示
     document.getElementById('k-title').innerText = data.title;
     document.getElementById('k-content').innerText = data.content;
     app.switchTab('menu');
     app.switchView('view-knowledge');
     document.querySelector('.bottom-nav').style.display = 'none';
 
-    // ★ログ送信（既読管理のため）
     if(app.state.user && app.state.user.userId !== 'dummy') {
       fetch(GAS_URL, {
         method: 'POST', headers: {'Content-Type': 'text/plain'},
@@ -272,7 +291,7 @@ const app = {
           displayName: app.state.user.displayName,
           type: key
         })
-      }).catch(e => console.log('Log Error', e)); // エラーでもユーザーには見せない
+      }).catch(e => console.log('Log Error', e)); 
     }
   },
 
@@ -290,6 +309,7 @@ const app = {
     
     if (tabName === 'mypage') {
       document.getElementById('view-mypage').classList.remove('hidden');
+      // マイページに戻るたびにデータを再取得（更新反映のため）
       if (app.state.user && app.state.user.userId !== 'dummy') app.fetchUserData();
     } else {
       document.getElementById('view-menu').classList.remove('hidden');
