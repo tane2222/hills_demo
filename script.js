@@ -1,4 +1,6 @@
-// --- 1. Configuration: 診断コンテンツデータ ---
+// script.js (Safe Version)
+
+// --- Configuration ---
 const DATA = {
   periodontal: {
     title: '歯周病リスク診断',
@@ -30,8 +32,8 @@ const DATA = {
   }
 };
 
-// --- Config ---
-// 【重要】ここに正しいIDを入れてください
+// --- API Config ---
+// ★ここに「シークレットモードでログイン画面が出なかったURL」を貼る
 const GAS_URL = 'https://script.google.com/macros/s/AKfycby-TmXAoKsyyie_srkFnvX3xghsPO4QQuIlSnEn-0c31uEX8Up6M5dwhEGwhd7dzgoMZg/exec'; 
 const LIFF_ID = '2008709251-eFKUYcgF'; 
 
@@ -40,121 +42,85 @@ const app = {
     user: null, 
     history: [],
     radarData: [0,0,0,0,0],
-    
-    type: null,
-    score: 0,
-    qIndex: 0,
-    answers: {}
+    type: null, score: 0, qIndex: 0, answers: {}
   },
 
   // --- A. Initialize ---
   init: async () => {
-    // ローディング強制解除用の保険
-    const loadingTimer = setTimeout(() => {
-        document.getElementById('global-loading').classList.add('hidden');
-    }, 5000); // 5秒経っても終わらなければ強制表示
+    // 強制タイムアウト (5秒)
+    const timer = setTimeout(() => {
+      console.warn("Loading timeout forced.");
+      document.getElementById('global-loading').classList.add('hidden');
+    }, 5000);
 
     try {
-      // 1. LIFF初期化
       await liff.init({ liffId: LIFF_ID });
       
-      // 2. ログインチェック
       if (!liff.isLoggedIn()) {
-        liff.login(); 
-        return;
+        liff.login(); return;
       }
       
-      // 3. プロフィール取得
       const profile = await liff.getProfile();
       app.state.user = profile;
-      
-      // UI更新
       document.getElementById('user-name').innerText = profile.displayName;
-      const img = document.getElementById('user-icon');
-      if(profile.pictureUrl) img.src = profile.pictureUrl;
+      if(profile.pictureUrl) document.getElementById('user-icon').src = profile.pictureUrl;
 
-      // 4. データ取得 (GAS)
       await app.fetchUserData();
 
     } catch (err) {
       console.error('Init Error:', err);
-      // エラー時（ローカルテストやIDミス）はデバックモードで起動
-      app.state.user = { userId: 'dummy', displayName: 'Debug User' };
-      document.getElementById('user-name').innerText = "Guest Mode";
-      
-      // ダミーチャートを描画
-      app.drawRadarChart([50, 50, 50, 50, 50]);
-      
-      alert('LIFF初期化エラー: ゲストモードで起動します。\n' + err.message);
+      // エラー時はデモモードで起動
+      app.state.user = { userId: 'dummy', displayName: 'Guest' };
+      app.drawRadarChart([50,50,50,50,50]);
     } finally {
-      // 成功しても失敗しても必ずローディングを消す
-      clearTimeout(loadingTimer);
-      document.getElementById('global-loading').classList.add('hidden');
+      // 必ずローディングを消す
+      clearTimeout(timer);
+      const loader = document.getElementById('global-loading');
+      if(loader) loader.classList.add('hidden');
     }
   },
 
-  // --- B. Data Fetching (My Page) ---
-  // script.js の fetchUserData をこれに置き換え
-
+  // --- B. Data Fetching ---
   fetchUserData: async () => {
     try {
-      // ★デバッグ用: URLが正しいかコンソールに出す
-      console.log("Fetching from:", GAS_URL);
-
       const res = await fetch(GAS_URL, {
         method: 'POST',
-        // ★以下の2行を追加（重要）
-        mode: 'cors', 
-        credentials: 'omit', 
         headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify({ action: 'get_user_data', userId: app.state.user.userId })
       });
       
-      if (!res.ok) {
-        throw new Error(`HTTP Status: ${res.status}`);
-      }
-
+      if (!res.ok) throw new Error("Network response was not ok");
+      
       const data = await res.json();
-      console.log("Data received:", data); // ★データ確認用
-
       if (data.status === 'success') {
         app.state.history = data.history;
         app.state.radarData = data.radar;
-        
         app.renderHistory();
         app.drawRadarChart(data.radar);
-      } else {
-         // GAS側でエラーキャッチされた場合
-         console.error("Server Logic Error:", data);
       }
-
     } catch (e) {
-      console.error('Fetch Error Detail:', e);
-      // エラー時も画面を止めないためのダミー表示
+      console.error('Fetch Failed:', e);
+      // 失敗しても空データで描画して画面を見せる
       app.renderHistory();
       app.drawRadarChart([0,0,0,0,0]);
-      
-      // ユーザーにアラートを出す（任意）
-      // alert("通信エラー: シート名が正しいか、URLが/execか確認してください");
     }
   },
 
   renderHistory: () => {
     const list = document.getElementById('history-list');
+    if(!list) return;
     list.innerHTML = '';
-    if (app.state.history.length === 0) {
-      list.innerHTML = '<div class="empty-state" style="text-align:center; padding:20px; color:#aaa;">診断履歴はまだありません</div>';
+    
+    if (!app.state.history || app.state.history.length === 0) {
+      list.innerHTML = '<div class="empty-state" style="padding:20px; text-align:center; color:#999;">履歴なし</div>';
       return;
     }
     app.state.history.forEach(h => {
       let title = (DATA[h.type]) ? DATA[h.type].title : h.type;
-      const item = document.createElement('div');
-      item.className = 'history-item';
-      item.innerHTML = `
-        <div><span class="h-date">${h.date}</span><span class="h-title">${title}</span></div>
-        <div class="h-score">${h.score}pt</div>
-      `;
-      list.appendChild(item);
+      const d = document.createElement('div');
+      d.className = 'history-item';
+      d.innerHTML = `<div><span class="h-date">${h.date}</span><span class="h-title">${title}</span></div><div class="h-score">${h.score}pt</div>`;
+      list.appendChild(d);
     });
   },
 
@@ -172,10 +138,7 @@ const app = {
   renderQuestion: () => {
     const qData = DATA[app.state.type].questions[app.state.qIndex];
     const total = DATA[app.state.type].questions.length;
-    
-    const pct = ((app.state.qIndex) / total) * 100;
-    document.getElementById('progress-bar').style.width = `${pct}%`;
-
+    document.getElementById('progress-bar').style.width = `${((app.state.qIndex)/total)*100}%`;
     document.getElementById('q-current').innerText = app.state.qIndex + 1;
     document.getElementById('q-text').innerText = qData.text;
 
@@ -193,9 +156,7 @@ const app = {
   handleAnswer: (score, text) => {
     app.state.score += score;
     app.state.answers[`q${app.state.qIndex}`] = text;
-    
-    const maxQ = DATA[app.state.type].questions.length;
-    if (app.state.qIndex < maxQ - 1) {
+    if (app.state.qIndex < DATA[app.state.type].questions.length - 1) {
       app.state.qIndex++;
       app.renderQuestion();
     } else {
@@ -205,8 +166,7 @@ const app = {
 
   showResultCalc: () => {
     document.getElementById('global-loading').classList.remove('hidden');
-    document.getElementById('progress-bar').style.width = '100%';
-
+    
     const payload = {
       action: 'save_diagnosis',
       userId: app.state.user.userId,
@@ -229,9 +189,9 @@ const app = {
     })
     .catch(err => {
       console.error(err);
-      alert('通信エラーが発生しましたが、結果を表示します');
+      // エラーでも止まらない
       document.getElementById('global-loading').classList.add('hidden');
-      app.renderResultScreen(); // ローカル判定で続行
+      app.renderResultScreen(); 
       app.switchView('view-result');
     });
   },
@@ -243,28 +203,26 @@ const app = {
 
     document.getElementById('result-date').innerText = new Date().toLocaleDateString();
     document.getElementById('result-score').innerText = score;
-    
     const badge = document.getElementById('result-level');
     badge.innerText = result.level;
     badge.style.backgroundColor = result.color;
-    
     document.getElementById('result-msg').innerText = result.msg;
 
     app.drawResultBarChart(score);
   },
 
-  // --- D. Navigation & Utils ---
+  // --- D. Navigation ---
   switchTab: (tabName) => {
     document.querySelectorAll('.view').forEach(el => el.classList.add('hidden'));
-    document.querySelector('.bottom-nav').style.display = 'flex'; 
-    
+    document.querySelector('.bottom-nav').style.display = 'flex';
     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
     document.getElementById(`nav-${tabName}`).classList.add('active');
 
     if (tabName === 'mypage') {
       document.getElementById('view-mypage').classList.remove('hidden');
       if (app.state.user && app.state.user.userId !== 'dummy') {
-        app.fetchUserData();
+         // 静かに更新
+         app.fetchUserData();
       }
     } else {
       document.getElementById('view-menu').classList.remove('hidden');
@@ -278,29 +236,21 @@ const app = {
     window.scrollTo(0,0);
   },
 
-  finishAndReturn: () => {
-    app.switchTab('mypage');
-  },
+  finishAndReturn: () => { app.switchTab('mypage'); },
 
-  // --- E. Chart Functions (修正済み) ---
-  
-  // 1. 棒グラフ (診断結果)
+  // --- E. Charts ---
   drawResultBarChart: (userScore) => {
     const ctx = document.getElementById('scoreChart');
-    if (!ctx) return;
+    if (!ctx || typeof Chart === 'undefined') return; // Chart.jsがない場合のガード
     
-    // 【修正】Chart.js v3/v4の安全な破棄方法
-    const existingChart = Chart.getChart(ctx);
-    if (existingChart) {
-      existingChart.destroy();
-    }
+    const existing = Chart.getChart(ctx);
+    if (existing) existing.destroy();
 
     new Chart(ctx, {
       type: 'bar',
       data: {
         labels: ['あなた', '30代平均', '理想'],
         datasets: [{
-          label: 'リスクスコア',
           data: [userScore, 45, 10], 
           backgroundColor: ['#0056D2', '#E0E0E0', '#00C6AB'],
           borderRadius: 8, barThickness: 40
@@ -317,16 +267,12 @@ const app = {
     });
   },
 
-  // 2. レーダーチャート (マイページ)
   drawRadarChart: (dataValues) => {
     const ctx = document.getElementById('radarChart');
-    if (!ctx) return;
+    if (!ctx || typeof Chart === 'undefined') return;
 
-    // 【修正】Chart.js v3/v4の安全な破棄方法
-    const existingChart = Chart.getChart(ctx);
-    if (existingChart) {
-      existingChart.destroy();
-    }
+    const existing = Chart.getChart(ctx);
+    if (existing) existing.destroy();
     
     const isNoData = dataValues.every(v => v === 0);
     const displayData = isNoData ? [50,50,50,50,50] : dataValues;
@@ -340,8 +286,7 @@ const app = {
           backgroundColor: 'rgba(255, 255, 255, 0.15)',
           borderColor: '#FFFFFF',
           pointBackgroundColor: '#00C6AB',
-          borderWidth: 1.5,
-          pointRadius: 3
+          borderWidth: 1.5, pointRadius: 3
         }]
       },
       options: {
@@ -360,5 +305,4 @@ const app = {
   }
 };
 
-// Start
 app.init();
