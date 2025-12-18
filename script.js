@@ -220,4 +220,176 @@ const app = {
     app.state.score += score;
     app.state.answers[`q${app.state.qIndex}`] = text;
     if (app.state.qIndex < DATA[app.state.type].questions.length - 1) {
-      app.state.q
+      app.state.qIndex++;
+      app.renderQuestion();
+    } else {
+      app.showResultCalc();
+    }
+  },
+
+  showResultCalc: () => {
+    document.getElementById('global-loading').classList.remove('hidden');
+    const payload = {
+      action: 'save_diagnosis', userId: app.state.user.userId, displayName: app.state.user.displayName,
+      type: app.state.type, score: app.state.score, answers: app.state.answers
+    };
+    fetch(GAS_URL, {
+      method: 'POST', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify(payload)
+    }).then(r=>r.json()).then(d=>{
+      app.renderResultScreen();
+      document.getElementById('global-loading').classList.add('hidden');
+      app.switchView('view-result');
+    }).catch(e=>{
+      app.renderResultScreen();
+      document.getElementById('global-loading').classList.add('hidden');
+      app.switchView('view-result');
+    });
+  },
+
+  renderResultScreen: () => {
+    const score = app.state.score;
+    const settings = DATA[app.state.type].results;
+    const result = settings.find(r => score <= r.max) || settings[settings.length-1];
+    
+    document.getElementById('result-date').innerText = new Date().toLocaleDateString();
+    document.getElementById('result-score').innerText = score;
+    const badge = document.getElementById('result-level');
+    badge.innerText = result.level; badge.style.backgroundColor = result.color;
+    document.getElementById('result-summary').innerText = result.msg;
+    
+    // ★復活: アドバイス欄へのテキスト挿入
+    const adviceEl = document.getElementById('result-advice');
+    if (adviceEl) {
+      adviceEl.innerText = "あなたのリスクレベルに基づき、専門家による早期のカウンセリングをお勧めします。";
+    }
+
+    app.drawResultBarChart(score);
+  },
+
+  // --- Knowledge Logic ---
+  showKnowledge: (key) => {
+    const data = KNOWLEDGE_DATA[key];
+    if(!data) return;
+    
+    document.getElementById('k-title').innerText = data.title;
+    document.getElementById('k-content').innerText = data.content;
+    app.switchTab('menu');
+    app.switchView('view-knowledge');
+    document.querySelector('.bottom-nav').style.display = 'none';
+
+    if(app.state.user && app.state.user.userId !== 'dummy') {
+      fetch(GAS_URL, {
+        method: 'POST', headers: {'Content-Type': 'text/plain'},
+        body: JSON.stringify({
+          action: 'log_knowledge',
+          userId: app.state.user.userId,
+          displayName: app.state.user.displayName,
+          type: key
+        })
+      }).catch(e => console.log('Log Error', e)); 
+    }
+  },
+
+  closeKnowledge: () => {
+    app.switchTab('menu');
+    app.switchSubTab('know');
+  },
+
+  // --- Navigation ---
+  switchTab: (tabName) => {
+    document.querySelectorAll('.view').forEach(el => el.classList.add('hidden'));
+    document.querySelector('.bottom-nav').style.display = 'flex';
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    document.getElementById(`nav-${tabName}`).classList.add('active');
+    
+    if (tabName === 'mypage') {
+      document.getElementById('view-mypage').classList.remove('hidden');
+      if (app.state.user && app.state.user.userId !== 'dummy') app.fetchUserData();
+    } else {
+      document.getElementById('view-menu').classList.remove('hidden');
+    }
+    window.scrollTo(0,0);
+  },
+
+  switchSubTab: (subName) => {
+    document.querySelectorAll('.sub-nav-item').forEach(el => el.classList.remove('active'));
+    document.getElementById(`sub-${subName}`).classList.add('active');
+    if (subName === 'check') {
+      document.getElementById('content-check').classList.remove('hidden');
+      document.getElementById('content-know').classList.add('hidden');
+    } else {
+      document.getElementById('content-check').classList.add('hidden');
+      document.getElementById('content-know').classList.remove('hidden');
+    }
+  },
+
+  switchView: (viewId) => {
+    document.querySelectorAll('.view').forEach(el => el.classList.add('hidden'));
+    document.getElementById(viewId).classList.remove('hidden');
+    window.scrollTo(0,0);
+  },
+
+  finishAndReturn: () => app.switchTab('mypage'),
+
+  // --- Charts ---
+  drawResultBarChart: (score) => {
+    const ctx = document.getElementById('scoreChart'); if(!ctx) return;
+    const exist = Chart.getChart(ctx); if(exist) exist.destroy();
+    
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['あなた', '平均', '理想'],
+        datasets: [{
+          data: [score, 45, 10], 
+          backgroundColor: ['#0056D2', '#E0E0E0', '#00C6AB'],
+          borderRadius: 8, barThickness: 40
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: {
+            beginAtZero: true, max: 100,
+            grid: { display: true, drawBorder: false, color: '#f0f0f0' }
+          },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  },
+  
+  drawRadarChart: (d) => {
+    const ctx = document.getElementById('radarChart'); if(!ctx) return;
+    const exist = Chart.getChart(ctx); if(exist) exist.destroy();
+    const is0 = d.every(v=>v===0); const data = is0 ? [50,50,50,50,50] : d;
+    
+    new Chart(ctx, {
+      type: 'radar',
+      data: {
+        labels: ['歯茎','清潔','口臭','習慣','知識'],
+        datasets: [{
+          data: data,
+          backgroundColor: 'rgba(255, 255, 255, 0.15)',
+          borderColor: '#FFFFFF',
+          pointBackgroundColor: '#00C6AB',
+          borderWidth: 1.5, pointRadius: 3
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          r: {
+            angleLines: { color: 'rgba(255, 255, 255, 0.2)' },
+            grid: { color: 'rgba(255, 255, 255, 0.2)' },
+            pointLabels: { color: '#FFFFFF', font: { size: 10 } },
+            ticks: { display: false, max: 100, min: 0 }
+          }
+        }
+      }
+    });
+  }
+};
+app.init();
