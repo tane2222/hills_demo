@@ -2,277 +2,122 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>お口の健康診断</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Dental Health Check</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Roboto:wght@500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <style>
-    /* --- Modern & Simple Dental Design --- */
-    :root {
-      --primary: #00BFA5; /* 清潔感のあるティールグリーン */
-      --primary-dark: #009688;
-      --accent: #FFAB40; /* 柔らかいオレンジ（アクション用） */
-      --bg: #F7F9FA;
-      --text: #333333;
-      --text-light: #777777;
-      --white: #ffffff;
-      --radius: 12px;
-      --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      margin: 0;
-      padding: 20px;
-      line-height: 1.6;
-    }
-
-    /* Cards */
-    .card {
-      background: var(--white);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 20px;
-      margin-bottom: 20px;
-      transition: transform 0.2s;
-    }
-
-    h1 { font-size: 1.5rem; text-align: center; color: var(--primary-dark); margin-bottom: 20px; }
-    h2 { font-size: 1.2rem; margin-bottom: 10px; }
-    p { font-size: 0.95rem; color: var(--text-light); }
-
-    /* Buttons */
-    .btn {
-      display: block;
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: var(--radius);
-      font-size: 1rem;
-      font-weight: bold;
-      cursor: pointer;
-      text-align: center;
-      margin-top: 10px;
-      transition: background 0.2s;
-    }
-    .btn-primary { background-color: var(--primary); color: white; }
-    .btn-primary:active { background-color: var(--primary-dark); }
-    .btn-option { 
-      background-color: var(--bg); 
-      color: var(--text); 
-      text-align: left; 
-      border: 1px solid #eee;
-    }
-    .btn-option.selected {
-      background-color: #E0F2F1; /* 薄いグリーン */
-      border-color: var(--primary);
-      color: var(--primary-dark);
-    }
-
-    /* Menu Grid */
-    .menu-grid { display: grid; gap: 15px; }
-    .menu-item {
-      cursor: pointer;
-      text-align: center;
-      padding: 25px 15px;
-    }
-    .menu-icon { font-size: 2.5rem; margin-bottom: 10px; display: block; }
-
-    /* Steps & Progress */
-    .hidden { display: none; }
-    .step-indicator { text-align: right; font-size: 0.8rem; color: var(--primary); margin-bottom: 5px; }
-
-    /* Loading Spinner */
-    .spinner {
-      border: 4px solid #f3f3f3; border-top: 4px solid var(--primary);
-      border-radius: 50%; width: 40px; height: 40px;
-      animation: spin 1s linear infinite; margin: 30px auto;
-    }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <div id="view-menu">
-    <h1>お口の健康診断</h1>
-    <p style="text-align:center; margin-bottom:20px;">気になる項目を選んでください</p>
+  <header class="app-header">
+    <div class="logo">DENTAL CHECK</div>
+    <div class="sub-logo">Official Report</div>
+  </header>
+
+  <main class="container">
     
-    <div class="menu-grid">
-      <div class="card menu-item" onclick="startDiagnosis('periodontal')">
-        <span class="menu-icon">🦷</span>
-        <h2>歯周病リスク</h2>
-        <p>歯茎の腫れ・出血など</p>
+    <section id="view-menu" class="view fade-in">
+      <div class="hero-card">
+        <h2>Self Check</h2>
+        <p>あなたの「お口の健康偏差値」を<br>今すぐ診断します。</p>
+        <img src="https://placehold.co/600x400/0056D2/FFFFFF?text=DENTAL+SCAN" alt="Concept" class="hero-img">
+      </div>
+
+      <div class="menu-list">
+        <button class="menu-card" onclick="app.startDiagnosis('periodontal')">
+          <div class="icon-box">🦷</div>
+          <div class="text-box">
+            <h3>歯周病リスク診断</h3>
+            <p>口臭・出血・歯茎の状態チェック</p>
+          </div>
+          <div class="arrow">→</div>
+        </button>
+        
+        <button class="menu-card" onclick="app.startDiagnosis('aesthetic')">
+          <div class="icon-box">✨</div>
+          <div class="text-box">
+            <h3>審美・ホワイトニング</h3>
+            <p>歯の色・並び・見た目チェック</p>
+          </div>
+          <div class="arrow">→</div>
+        </button>
+      </div>
+    </section>
+
+    <section id="view-question" class="view hidden">
+      <div class="progress-bar-container">
+        <div class="progress-bar" id="progress-bar"></div>
       </div>
       
-      <div class="card menu-item" onclick="startDiagnosis('aesthetic')">
-        <span class="menu-icon">✨</span>
-        <h2>審美・見た目</h2>
-        <p>黄ばみ・歯並びなど</p>
+      <div class="question-card">
+        <div class="step-label">QUESTION <span id="q-current">1</span></div>
+        <h2 id="q-text" class="question-text">質問がここに入ります</h2>
+        <div id="q-options" class="options-grid">
+          </div>
+      </div>
+    </section>
+
+    <section id="view-loading" class="view hidden">
+      <div class="loading-content">
+        <div class="spinner"></div>
+        <p>データを解析中...</p>
+        <p class="sub-text">AIエンジンが判定しています</p>
+      </div>
+    </section>
+
+    <section id="view-result" class="view hidden">
+      
+      <div class="result-header">
+        <h3>診断レポート</h3>
+        <p class="date" id="result-date">2025.12.18</p>
       </div>
 
-      <div class="card menu-item" onclick="startDiagnosis('child')">
-        <span class="menu-icon">👶</span>
-        <h2>お子様チェック</h2>
-        <p>虫歯リスク・習慣</p>
-      </div>
-    </div>
-  </div>
-
-  <div id="view-question" class="hidden">
-    <div class="card">
-      <div class="step-indicator">Q <span id="q-current">1</span> / <span id="q-total">5</span></div>
-      <h2 id="q-text">質問テキスト</h2>
-      <div id="q-options">
+      <div class="score-card">
+        <div class="score-row">
+          <div class="score-item">
+            <span class="label">あなたのスコア</span>
+            <div class="value-box">
+              <span class="value" id="result-score">--</span>
+              <span class="unit">点</span>
+            </div>
+          </div>
+          <div class="score-item">
+            <span class="label">リスクレベル</span>
+            <div class="level-badge" id="result-level">LEVEL -</div>
+          </div>
         </div>
-    </div>
-  </div>
+        
+        <hr class="divider">
+        
+        <p class="result-summary" id="result-summary">
+          判定結果の概要がここに表示されます。
+        </p>
+      </div>
 
-  <div id="view-result" class="hidden">
-    <div class="card" style="text-align:center;">
-      <h2 id="result-title">診断中...</h2>
-      <div id="loading-spinner" class="spinner"></div>
-      <p id="result-msg">結果を解析しています。</p>
-      <button id="btn-close" class="btn btn-primary hidden" onclick="liff.closeWindow()">閉じる</button>
-    </div>
-  </div>
+      <div class="chart-card">
+        <h4>年代別平均との比較</h4>
+        <div class="chart-container">
+          <canvas id="scoreChart"></canvas>
+        </div>
+        <p class="chart-caption">※同年代の患者様データに基づく比較</p>
+      </div>
 
-<script>
-  // --- Configuration: 質問データ ---
-  const QUESTIONS = {
-    periodontal: [
-      { id: 'q1', text: '歯磨きの時、出血することはありますか？', options: [{label:'よくある', score:3}, {label:'たまにある', score:1}, {label:'ない', score:0}] },
-      { id: 'q2', text: '朝起きた時、口の中がネバネバしますか？', options: [{label:'はい', score:2}, {label:'いいえ', score:0}] },
-      { id: 'q3', text: '歯が長くなった（歯茎が下がった）気がしますか？', options: [{label:'はい', score:3}, {label:'いいえ', score:0}] },
-      { id: 'q4', text: '口臭を指摘された、または気になりますか？', options: [{label:'はい', score:2}, {label:'いいえ', score:0}] }
-    ],
-    aesthetic: [
-      { id: 'q1', text: '最も気になることは何ですか？', options: [{label:'歯の色・黄ばみ', score:0}, {label:'歯並び', score:0}, {label:'銀歯を白くしたい', score:0}] },
-      { id: 'q2', text: 'いつまでに治したいですか？', options: [{label:'できるだけ早く', score:2}, {label:'半年以内', score:1}, {label:'特に決まってない', score:0}] },
-      { id: 'q3', text: '人前で笑う時、口元を手で隠してしまいますか？', options: [{label:'はい', score:3}, {label:'いいえ', score:0}] }
-    ],
-    child: [
-      { id: 'q1', text: 'おやつ（アメやジュース含む）を1日何回とりますか？', options: [{label:'3回以上', score:3}, {label:'2回', score:1}, {label:'1回以下', score:0}] },
-      { id: 'q2', text: '仕上げ磨きは毎日していますか？', options: [{label:'毎日している', score:0}, {label:'時々忘れる', score:2}, {label:'していない', score:5}] },
-      { id: 'q3', text: 'フッ素塗布をしたことはありますか？', options: [{label:'定期的にしている', score:0}, {label:'昔したことがある', score:1}, {label:'ない', score:3}] }
-    ]
-  };
+      <div class="advice-card">
+        <h4><span class="icon">💡</span> 今後のアドバイス</h4>
+        <p id="result-advice">アドバイス文章...</p>
+      </div>
 
-  // --- State ---
-  let currentType = '';
-  let currentQIndex = 0;
-  let totalScore = 0;
-  let answers = {};
-  let userProfile = null;
+      <div class="cta-area">
+        <button class="btn-primary" onclick="app.closeLiff()">レポートを保存して終了</button>
+        <a href="#" class="btn-link">WEB予約はこちら &gt;</a>
+      </div>
 
-  // --- Initialize ---
-  // ★ここにLIFF IDを入れてください
-  const LIFF_ID = '2008709251-eFKUYcgF'; 
-  // ★GASのウェブアプリURLを入れてください
-  const GAS_URL = 'https://script.google.com/macros/s/AKfycbw1wYTnO7uSsxeGiLnLcT0k1cZvZmXAGICCMICoYgIK-A3NfbCQSJcO2F_zmD9IeEChvA/exec';
+    </section>
 
-  async function initLiff() {
-    try {
-      await liff.init({ liffId: LIFF_ID });
-      if (liff.isLoggedIn()) {
-        userProfile = await liff.getProfile();
-      } else {
-        liff.login();
-      }
-    } catch (err) {
-      console.error('LIFF Init Error', err);
-      // ローカルテスト用ダミー
-      userProfile = { userId: 'dummy', displayName: 'Guest' }; 
-    }
-  }
-  initLiff();
+  </main>
 
-  // --- UI Functions ---
-  function switchView(viewId) {
-    document.querySelectorAll('[id^="view-"]').forEach(el => el.classList.add('hidden'));
-    document.getElementById(viewId).classList.remove('hidden');
-  }
-
-  function startDiagnosis(type) {
-    currentType = type;
-    currentQIndex = 0;
-    totalScore = 0;
-    answers = {};
-    renderQuestion();
-    switchView('view-question');
-  }
-
-  function renderQuestion() {
-    const qList = QUESTIONS[currentType];
-    const q = qList[currentQIndex];
-
-    document.getElementById('q-current').innerText = currentQIndex + 1;
-    document.getElementById('q-total').innerText = qList.length;
-    document.getElementById('q-text').innerText = q.text;
-
-    const optionsDiv = document.getElementById('q-options');
-    optionsDiv.innerHTML = '';
-
-    q.options.forEach((opt, idx) => {
-      const btn = document.createElement('button');
-      btn.className = 'btn btn-option';
-      btn.innerText = opt.label;
-      btn.onclick = () => handleAnswer(q.id, opt.label, opt.score);
-      optionsDiv.appendChild(btn);
-    });
-  }
-
-  function handleAnswer(qId, label, score) {
-    // Save Answer
-    answers[qId] = label;
-    totalScore += score;
-
-    // Next or Finish
-    const qList = QUESTIONS[currentType];
-    if (currentQIndex < qList.length - 1) {
-      currentQIndex++;
-      renderQuestion();
-    } else {
-      submitDiagnosis();
-    }
-  }
-
-  // --- API ---
-  async function submitDiagnosis() {
-    switchView('view-result');
-    
-    const payload = {
-      userId: userProfile ? userProfile.userId : 'unknown',
-      displayName: userProfile ? userProfile.displayName : 'Guest',
-      type: currentType,
-      score: totalScore,
-      answers: answers
-    };
-
-    try {
-      // Send to GAS
-      await fetch(GAS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' }, // GAS do not support application/json in CORS well
-        body: JSON.stringify(payload)
-      });
-
-      // Show Success
-      document.getElementById('loading-spinner').classList.add('hidden');
-      document.getElementById('result-title').innerText = '診断完了';
-      document.getElementById('result-msg').innerText = '結果をLINEにお送りしました。\nトーク画面をご確認ください。';
-      document.getElementById('btn-close').classList.remove('hidden');
-
-      // Send simple message in chat on behalf of user (optional)
-      // if (liff.isInClient()) {
-      //   liff.sendMessages([{ type: 'text', text: '診断を行いました' }]);
-      // }
-
-    } catch (err) {
-      document.getElementById('result-title').innerText = 'エラー';
-      document.getElementById('result-msg').innerText = '送信に失敗しました。もう一度お試しください。';
-      console.error(err);
-    }
-  }
-</script>
+  <script src="script.js"></script>
 </body>
 </html>
