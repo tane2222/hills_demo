@@ -40,29 +40,74 @@
     </section>
 
     <section id="view-menu" class="view hidden">
-      <div class="hero-card">
-        <h2>Self Check</h2>
-        <p>あなたの「お口の健康偏差値」を<br>今すぐ診断します。</p>
+      <div class="sub-nav">
+        <button class="sub-nav-item active" onclick="app.switchSubTab('check')" id="sub-check">セルフ診断</button>
+        <button class="sub-nav-item" onclick="app.switchSubTab('know')" id="sub-know">歯科知識</button>
+      </div>
+
+      <div id="content-check" class="fade-in">
+        <div class="hero-card small-hero">
+          <h2>Self Check</h2>
+          <p>気になる項目をチェックしましょう</p>
         </div>
 
-      <div class="menu-list">
-        <button class="menu-card" onclick="app.startDiagnosis('periodontal')">
-          <div class="icon-box">🦷</div>
-          <div class="text-box">
-            <h3>歯周病リスク診断</h3>
-            <p>口臭・出血・歯茎の状態チェック</p>
+        <div class="grid-menu">
+          <div class="grid-card" onclick="app.startDiagnosis('periodontal')">
+            <div class="grid-icon">🦷</div>
+            <h3>歯周病</h3>
+            <p>出血・口臭</p>
           </div>
-          <div class="arrow">→</div>
-        </button>
-        
-        <button class="menu-card" onclick="app.startDiagnosis('aesthetic')">
-          <div class="icon-box">✨</div>
-          <div class="text-box">
-            <h3>審美・ホワイトニング</h3>
-            <p>歯の色・並び・見た目チェック</p>
+          <div class="grid-card" onclick="app.startDiagnosis('aesthetic')">
+            <div class="grid-icon">✨</div>
+            <h3>審美</h3>
+            <p>見た目・色</p>
           </div>
-          <div class="arrow">→</div>
-        </button>
+          <div class="grid-card" onclick="app.startDiagnosis('stain')">
+            <div class="grid-icon">☕</div>
+            <h3>ステイン</h3>
+            <p>着色リスク</p>
+          </div>
+          <div class="grid-card" onclick="app.startDiagnosis('breath')">
+            <div class="grid-icon">💨</div>
+            <h3>口臭</h3>
+            <p>エチケット</p>
+          </div>
+          <div class="grid-card" onclick="app.startDiagnosis('brushing')">
+            <div class="grid-icon">🪥</div>
+            <h3>磨き方</h3>
+            <p>習慣チェック</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="content-know" class="hidden fade-in">
+        <div class="knowledge-list">
+          <div class="knowledge-card" onclick="app.showKnowledge('perio_truth')">
+            <div class="k-tag">重要</div>
+            <h3>歯周病の正体とは？</h3>
+            <p>サイレントキラーと呼ばれる理由</p>
+          </div>
+          <div class="knowledge-card" onclick="app.showKnowledge('pro_care')">
+            <div class="k-tag">ケア</div>
+            <h3>プロのケア vs 自宅のケア</h3>
+            <p>歯磨きだけでは限界がある理由</p>
+          </div>
+          <div class="knowledge-card" onclick="app.showKnowledge('child')">
+            <div class="k-tag">小児</div>
+            <h3>お子様の歯 Q&A</h3>
+            <p>フッ素・シーラント・仕上げ磨き</p>
+          </div>
+          <div class="knowledge-card" onclick="app.showKnowledge('implant')">
+            <div class="k-tag">治療</div>
+            <h3>インプラントの秘訣</h3>
+            <p>長持ちさせるためのメンテナンス</p>
+          </div>
+          <div class="knowledge-card" onclick="app.showKnowledge('goods')">
+            <div class="k-tag">グッズ</div>
+            <h3>おすすめケアグッズ</h3>
+            <p>プロが選ぶ歯ブラシ・フロス</p>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -70,7 +115,6 @@
       <div class="progress-bar-container">
         <div class="progress-bar" id="progress-bar"></div>
       </div>
-      
       <div class="question-card">
         <div class="step-label">QUESTION <span id="q-current">1</span></div>
         <h2 id="q-text" class="question-text">--</h2>
@@ -83,15 +127,11 @@
         <h3>診断レポート</h3>
         <p class="date" id="result-date">--</p>
       </div>
-
       <div class="score-card">
         <div class="score-row">
           <div class="score-item">
             <span class="label">あなたのスコア</span>
-            <div class="value-box">
-              <span class="value" id="result-score">--</span>
-              <span class="unit">点</span>
-            </div>
+            <div class="value-box"><span class="value" id="result-score">--</span><span class="unit">点</span></div>
           </div>
           <div class="score-item">
             <span class="label">リスクレベル</span>
@@ -101,41 +141,36 @@
         <hr class="divider">
         <p class="result-summary" id="result-summary">--</p>
       </div>
-
       <div class="chart-card">
-        <h4>年代別平均との比較</h4>
-        <div class="chart-container">
-          <canvas id="scoreChart"></canvas>
-        </div>
-        <p class="chart-caption">※同年代の患者様データに基づく比較</p>
+        <h4>平均との比較</h4>
+        <div class="chart-container"><canvas id="scoreChart"></canvas></div>
       </div>
-
-      <div class="advice-card">
-        <h4><span class="icon">💡</span> 今後のアドバイス</h4>
-        <p id="result-advice">アドバイス...</p>
-      </div>
-
       <div class="cta-area">
-        <button class="btn-primary" onclick="app.finishAndReturn()">レポートを保存してマイページへ</button>
-        <a href="#" class="btn-link">WEB予約はこちら &gt;</a>
+        <button class="btn-primary" onclick="app.finishAndReturn()">保存して終了</button>
+      </div>
+    </section>
+
+    <section id="view-knowledge" class="view hidden">
+      <button class="btn-back" onclick="app.closeKnowledge()">← 一覧に戻る</button>
+      <div class="article-card">
+        <h2 id="k-title">タイトル</h2>
+        <div id="k-content" class="article-body">本文...</div>
+        <button class="btn-primary" style="margin-top:20px;" onclick="app.closeKnowledge()">閉じる</button>
       </div>
     </section>
 
     <div id="global-loading" class="loading-overlay hidden">
       <div class="spinner"></div>
-      <p style="margin-top:10px; color:#666;">Processing...</p>
     </div>
 
   </main>
 
   <nav class="bottom-nav">
     <button class="nav-item active" onclick="app.switchTab('mypage')" id="nav-mypage">
-      <span class="nav-icon">👤</span>
-      <span class="nav-label">マイページ</span>
+      <span class="nav-icon">👤</span><span class="nav-label">マイページ</span>
     </button>
     <button class="nav-item" onclick="app.switchTab('menu')" id="nav-menu">
-      <span class="nav-icon">🩺</span>
-      <span class="nav-label">診断する</span>
+      <span class="nav-icon">🩺</span><span class="nav-label">診断・知識</span>
     </button>
   </nav>
 
