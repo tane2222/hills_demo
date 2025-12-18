@@ -31,17 +31,16 @@ const DATA = {
 };
 
 // --- Config ---
-// ★ここにGASとLIFFのIDを設定
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbw1wYTnO7uSsxeGiLnLcT0k1cZvZmXAGICCMICoYgIK-A3NfbCQSJcO2F_zmD9IeEChvA/exec';
+// 【重要】ここに正しいIDを入れてください
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbw1wYTnO7uSsxeGiLnLcT0k1cZvZmXAGICCMICoYgIK-A3NfbCQSJcO2F_zmD9IeEChvA/exec'; 
 const LIFF_ID = '2008709251-eFKUYcgF'; 
 
 const app = {
   state: {
-    user: null, // LIFF Profile
-    history: [], // User History
-    radarData: [0,0,0,0,0], // For MyPage
+    user: null, 
+    history: [],
+    radarData: [0,0,0,0,0],
     
-    // Diagnosis State
     type: null,
     score: 0,
     qIndex: 0,
@@ -50,33 +49,52 @@ const app = {
 
   // --- A. Initialize ---
   init: async () => {
+    // ローディング強制解除用の保険
+    const loadingTimer = setTimeout(() => {
+        document.getElementById('global-loading').classList.add('hidden');
+    }, 5000); // 5秒経っても終わらなければ強制表示
+
     try {
+      // 1. LIFF初期化
       await liff.init({ liffId: LIFF_ID });
+      
+      // 2. ログインチェック
       if (!liff.isLoggedIn()) {
-        liff.login(); return;
+        liff.login(); 
+        return;
       }
+      
+      // 3. プロフィール取得
       const profile = await liff.getProfile();
       app.state.user = profile;
       
-      // UI Update
+      // UI更新
       document.getElementById('user-name').innerText = profile.displayName;
       const img = document.getElementById('user-icon');
       if(profile.pictureUrl) img.src = profile.pictureUrl;
 
-      // Fetch User Data
+      // 4. データ取得 (GAS)
       await app.fetchUserData();
 
     } catch (err) {
       console.error('Init Error:', err);
-      // ローカルテスト用
+      // エラー時（ローカルテストやIDミス）はデバックモードで起動
       app.state.user = { userId: 'dummy', displayName: 'Debug User' };
-      app.drawRadarChart([60, 50, 70, 40, 80]); // Dummy
+      document.getElementById('user-name').innerText = "Guest Mode";
+      
+      // ダミーチャートを描画
+      app.drawRadarChart([50, 50, 50, 50, 50]);
+      
+      alert('LIFF初期化エラー: ゲストモードで起動します。\n' + err.message);
+    } finally {
+      // 成功しても失敗しても必ずローディングを消す
+      clearTimeout(loadingTimer);
+      document.getElementById('global-loading').classList.add('hidden');
     }
   },
 
   // --- B. Data Fetching (My Page) ---
   fetchUserData: async () => {
-    document.getElementById('global-loading').classList.remove('hidden');
     try {
       const res = await fetch(GAS_URL, {
         method: 'POST',
@@ -93,9 +111,10 @@ const app = {
         app.drawRadarChart(data.radar);
       }
     } catch (e) {
-      console.error(e);
-    } finally {
-      document.getElementById('global-loading').classList.add('hidden');
+      console.error('Fetch Error:', e);
+      // 通信エラー時は空のデータを表示
+      app.renderHistory();
+      app.drawRadarChart([0,0,0,0,0]);
     }
   },
 
@@ -126,7 +145,6 @@ const app = {
     app.state.answers = {};
     app.renderQuestion();
     app.switchView('view-question');
-    // Hide Bottom Nav during diagnosis to focus
     document.querySelector('.bottom-nav').style.display = 'none';
   },
 
@@ -134,15 +152,12 @@ const app = {
     const qData = DATA[app.state.type].questions[app.state.qIndex];
     const total = DATA[app.state.type].questions.length;
     
-    // Progress
     const pct = ((app.state.qIndex) / total) * 100;
     document.getElementById('progress-bar').style.width = `${pct}%`;
 
-    // Text
     document.getElementById('q-current').innerText = app.state.qIndex + 1;
     document.getElementById('q-text').innerText = qData.text;
 
-    // Options
     const div = document.getElementById('q-options');
     div.innerHTML = '';
     qData.options.forEach(opt => {
@@ -156,7 +171,6 @@ const app = {
 
   handleAnswer: (score, text) => {
     app.state.score += score;
-    // Save answer
     app.state.answers[`q${app.state.qIndex}`] = text;
     
     const maxQ = DATA[app.state.type].questions.length;
@@ -172,7 +186,6 @@ const app = {
     document.getElementById('global-loading').classList.remove('hidden');
     document.getElementById('progress-bar').style.width = '100%';
 
-    // Send to GAS
     const payload = {
       action: 'save_diagnosis',
       userId: app.state.user.userId,
@@ -189,17 +202,15 @@ const app = {
     })
     .then(res => res.json())
     .then(data => {
-      // Show Result Screen
-      app.renderResultScreen(data.resultLevel); // Use returned level or calc locally
+      app.renderResultScreen(data.resultLevel); 
       document.getElementById('global-loading').classList.add('hidden');
       app.switchView('view-result');
     })
     .catch(err => {
       console.error(err);
-      alert('通信エラーが発生しました');
+      alert('通信エラーが発生しましたが、結果を表示します');
       document.getElementById('global-loading').classList.add('hidden');
-      // Fallback: show local result
-      app.renderResultScreen();
+      app.renderResultScreen(); // ローカル判定で続行
       app.switchView('view-result');
     });
   },
@@ -207,7 +218,6 @@ const app = {
   renderResultScreen: () => {
     const score = app.state.score;
     const settings = DATA[app.state.type].results;
-    // Find result level
     const result = settings.find(r => score <= r.max) || settings[settings.length - 1];
 
     document.getElementById('result-date').innerText = new Date().toLocaleDateString();
@@ -219,23 +229,22 @@ const app = {
     
     document.getElementById('result-msg').innerText = result.msg;
 
-    // Draw Bar Chart (Result)
     app.drawResultBarChart(score);
   },
 
   // --- D. Navigation & Utils ---
   switchTab: (tabName) => {
     document.querySelectorAll('.view').forEach(el => el.classList.add('hidden'));
-    document.querySelector('.bottom-nav').style.display = 'flex'; // Show nav
+    document.querySelector('.bottom-nav').style.display = 'flex'; 
     
-    // Highlight Nav
     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
     document.getElementById(`nav-${tabName}`).classList.add('active');
 
     if (tabName === 'mypage') {
       document.getElementById('view-mypage').classList.remove('hidden');
-      // Refresh data when returning to MyPage
-      if (app.state.user) app.fetchUserData();
+      if (app.state.user && app.state.user.userId !== 'dummy') {
+        app.fetchUserData();
+      }
     } else {
       document.getElementById('view-menu').classList.remove('hidden');
     }
@@ -252,20 +261,26 @@ const app = {
     app.switchTab('mypage');
   },
 
-  // --- E. Chart Functions ---
+  // --- E. Chart Functions (修正済み) ---
   
-  // 1. Bar Chart for Result (Turn 3 logic)
+  // 1. 棒グラフ (診断結果)
   drawResultBarChart: (userScore) => {
-    const ctx = document.getElementById('scoreChart').getContext('2d');
-    if (window.resultChart) window.resultChart.destroy();
+    const ctx = document.getElementById('scoreChart');
+    if (!ctx) return;
+    
+    // 【修正】Chart.js v3/v4の安全な破棄方法
+    const existingChart = Chart.getChart(ctx);
+    if (existingChart) {
+      existingChart.destroy();
+    }
 
-    window.resultChart = new Chart(ctx, {
+    new Chart(ctx, {
       type: 'bar',
       data: {
         labels: ['あなた', '30代平均', '理想'],
         datasets: [{
           label: 'リスクスコア',
-          data: [userScore, 45, 10], // Mock averages
+          data: [userScore, 45, 10], 
           backgroundColor: ['#0056D2', '#E0E0E0', '#00C6AB'],
           borderRadius: 8, barThickness: 40
         }]
@@ -281,16 +296,21 @@ const app = {
     });
   },
 
-  // 2. Radar Chart for My Page (Turn 4 logic)
+  // 2. レーダーチャート (マイページ)
   drawRadarChart: (dataValues) => {
-    const ctx = document.getElementById('radarChart').getContext('2d');
-    if (window.radarChart) window.radarChart.destroy();
+    const ctx = document.getElementById('radarChart');
+    if (!ctx) return;
+
+    // 【修正】Chart.js v3/v4の安全な破棄方法
+    const existingChart = Chart.getChart(ctx);
+    if (existingChart) {
+      existingChart.destroy();
+    }
     
-    // データがない場合の薄い表示
     const isNoData = dataValues.every(v => v === 0);
     const displayData = isNoData ? [50,50,50,50,50] : dataValues;
 
-    window.radarChart = new Chart(ctx, {
+    new Chart(ctx, {
       type: 'radar',
       data: {
         labels: ['歯茎', '清潔', '口臭', '習慣', '知識'],
