@@ -86,7 +86,6 @@ const KNOWLEDGE_DATA = {
 };
 
 // --- Config ---
-// ★ここに有効なGAS URLを入れてください
 const GAS_URL = 'https://script.google.com/macros/s/AKfycby-TmXAoKsyyie_srkFnvX3xghsPO4QQuIlSnEn-0c31uEX8Up6M5dwhEGwhd7dzgoMZg/exec'; 
 const LIFF_ID = '2008709251-eFKUYcgF'; 
 
@@ -108,10 +107,8 @@ const app = {
       document.getElementById('user-name').innerText = profile.displayName;
       if(profile.pictureUrl) document.getElementById('user-icon').src = profile.pictureUrl;
 
-      // 1. マイページデータ取得
       await app.fetchUserData();
 
-      // 2. ディープリンク処理
       const params = new URLSearchParams(window.location.search);
       const page = params.get('page');
       const id = params.get('id');
@@ -126,7 +123,6 @@ const app = {
     } catch (err) {
       console.error(err);
       app.state.user = { userId: 'dummy', displayName: 'Demo' };
-      // エラー時も仮データを表示するために再描画
       app.renderHistory();
       app.drawRadarChart([60, 40, 70, 50, 80]);
     } finally {
@@ -147,27 +143,21 @@ const app = {
       const data = await res.json();
       if (data.status === 'success') {
         app.state.history = data.history;
-        // データ取得成功時に描画
         app.drawRadarChart(data.radar);
         app.renderHistory();
       }
     } catch(e) { 
-      // エラー時は仮データで描画
       app.renderHistory(); 
       app.drawRadarChart([50,50,50,50,50]); 
     }
   },
   
-  // ★履歴描画（仮データ対応版）
   renderHistory: () => {
     const list = document.getElementById('history-list');
     list.innerHTML = '';
     
-    // データがない場合、仮のデータ（3件）を表示する
     let displayHistory = app.state.history;
-    
     if (!displayHistory || displayHistory.length === 0) {
-      // 仮の履歴データ（3件）
       displayHistory = [
         { date: '2023/12/01', type: 'periodontal', score: 65, level: '注意' },
         { date: '2023/11/15', type: 'aesthetic', score: 40, level: '関心あり' },
@@ -176,7 +166,6 @@ const app = {
     }
 
     displayHistory.forEach(h => {
-      // 知識ログと診断ログでタイトル取得元を分ける
       let title = h.type;
       if (DATA[h.type]) title = DATA[h.type].title;
       else if (KNOWLEDGE_DATA[h.type]) title = KNOWLEDGE_DATA[h.type].title;
@@ -184,7 +173,6 @@ const app = {
       const d = document.createElement('div');
       d.className = 'history-item';
       
-      // スコア表示（知識系はスコアがないので非表示または読了）
       const scoreText = (h.score > 0) ? `<span style="color:var(--primary);font-weight:bold;">${h.score}pt</span>` : '<span style="font-size:0.8rem;color:#888;">読了</span>';
       
       d.innerHTML = `
@@ -232,122 +220,4 @@ const app = {
     app.state.score += score;
     app.state.answers[`q${app.state.qIndex}`] = text;
     if (app.state.qIndex < DATA[app.state.type].questions.length - 1) {
-      app.state.qIndex++;
-      app.renderQuestion();
-    } else {
-      app.showResultCalc();
-    }
-  },
-
-  showResultCalc: () => {
-    document.getElementById('global-loading').classList.remove('hidden');
-    const payload = {
-      action: 'save_diagnosis', userId: app.state.user.userId, displayName: app.state.user.displayName,
-      type: app.state.type, score: app.state.score, answers: app.state.answers
-    };
-    fetch(GAS_URL, {
-      method: 'POST', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify(payload)
-    }).then(r=>r.json()).then(d=>{
-      app.renderResultScreen();
-      document.getElementById('global-loading').classList.add('hidden');
-      app.switchView('view-result');
-    }).catch(e=>{
-      app.renderResultScreen();
-      document.getElementById('global-loading').classList.add('hidden');
-      app.switchView('view-result');
-    });
-  },
-
-  renderResultScreen: () => {
-    const score = app.state.score;
-    const settings = DATA[app.state.type].results;
-    const result = settings.find(r => score <= r.max) || settings[settings.length-1];
-    
-    document.getElementById('result-date').innerText = new Date().toLocaleDateString();
-    document.getElementById('result-score').innerText = score;
-    const badge = document.getElementById('result-level');
-    badge.innerText = result.level; badge.style.backgroundColor = result.color;
-    document.getElementById('result-summary').innerText = result.msg;
-    app.drawResultBarChart(score);
-  },
-
-  // --- Knowledge Logic ---
-  showKnowledge: (key) => {
-    const data = KNOWLEDGE_DATA[key];
-    if(!data) return;
-    
-    document.getElementById('k-title').innerText = data.title;
-    document.getElementById('k-content').innerText = data.content;
-    app.switchTab('menu');
-    app.switchView('view-knowledge');
-    document.querySelector('.bottom-nav').style.display = 'none';
-
-    if(app.state.user && app.state.user.userId !== 'dummy') {
-      fetch(GAS_URL, {
-        method: 'POST', headers: {'Content-Type': 'text/plain'},
-        body: JSON.stringify({
-          action: 'log_knowledge',
-          userId: app.state.user.userId,
-          displayName: app.state.user.displayName,
-          type: key
-        })
-      }).catch(e => console.log('Log Error', e)); 
-    }
-  },
-
-  closeKnowledge: () => {
-    app.switchTab('menu');
-    app.switchSubTab('know');
-  },
-
-  // --- Navigation ---
-  switchTab: (tabName) => {
-    document.querySelectorAll('.view').forEach(el => el.classList.add('hidden'));
-    document.querySelector('.bottom-nav').style.display = 'flex';
-    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-    document.getElementById(`nav-${tabName}`).classList.add('active');
-    
-    if (tabName === 'mypage') {
-      document.getElementById('view-mypage').classList.remove('hidden');
-      // マイページに戻るたびにデータを再取得（更新反映のため）
-      if (app.state.user && app.state.user.userId !== 'dummy') app.fetchUserData();
-    } else {
-      document.getElementById('view-menu').classList.remove('hidden');
-    }
-    window.scrollTo(0,0);
-  },
-
-  switchSubTab: (subName) => {
-    document.querySelectorAll('.sub-nav-item').forEach(el => el.classList.remove('active'));
-    document.getElementById(`sub-${subName}`).classList.add('active');
-    if (subName === 'check') {
-      document.getElementById('content-check').classList.remove('hidden');
-      document.getElementById('content-know').classList.add('hidden');
-    } else {
-      document.getElementById('content-check').classList.add('hidden');
-      document.getElementById('content-know').classList.remove('hidden');
-    }
-  },
-
-  switchView: (viewId) => {
-    document.querySelectorAll('.view').forEach(el => el.classList.add('hidden'));
-    document.getElementById(viewId).classList.remove('hidden');
-    window.scrollTo(0,0);
-  },
-
-  finishAndReturn: () => app.switchTab('mypage'),
-
-  // --- Charts ---
-  drawResultBarChart: (score) => {
-    const ctx = document.getElementById('scoreChart'); if(!ctx) return;
-    const exist = Chart.getChart(ctx); if(exist) exist.destroy();
-    new Chart(ctx, { type: 'bar', data: { labels: ['あなた','平均','理想'], datasets: [{ data: [score, 45, 10], backgroundColor: ['#0056D2','#E0E0E0','#00C6AB'], borderRadius:8, barThickness:40 }] }, options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,max:100,grid:{display:true,drawBorder:false}},x:{grid:{display:false}}} } });
-  },
-  drawRadarChart: (d) => {
-    const ctx = document.getElementById('radarChart'); if(!ctx) return;
-    const exist = Chart.getChart(ctx); if(exist) exist.destroy();
-    const is0 = d.every(v=>v===0); const data = is0 ? [50,50,50,50,50] : d;
-    new Chart(ctx, { type: 'radar', data: { labels: ['歯茎','清潔','口臭','習慣','知識'], datasets: [{ data: data, backgroundColor: 'rgba(255,255,255,0.15)', borderColor: '#FFF', pointBackgroundColor: '#00C6AB', borderWidth:1.5, pointRadius:3 }] }, options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{r:{angleLines:{color:'rgba(255,255,255,0.2)'},grid:{color:'rgba(255,255,255,0.2)'},pointLabels:{color:'#FFF',font:{size:10}},ticks:{display:false,max:100,min:0}}} } });
-  }
-};
-app.init();
+      app.state.q
